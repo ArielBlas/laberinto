@@ -1,0 +1,206 @@
+package com.progra3.laberinto.service;
+
+import com.progra3.laberinto.model.Celda;
+import com.progra3.laberinto.model.Laberinto;
+import com.progra3.laberinto.service.algoritmos.AlgoritmoServicioImpl;
+import com.progra3.laberinto.service.algoritmos.Prim;
+import com.progra3.laberinto.service.algoritmos.Kruskal;
+import com.progra3.laberinto.excepciones.AlgoritmoNoSoportadoException;
+import com.progra3.laberinto.excepciones.LaberintoNoEncontradoException;
+
+import org.springframework.stereotype.Service;
+import java.util.*;
+
+@Service
+public class LaberintoServicio {
+
+	private final AlgoritmoServicioImpl algoritmoServicio;
+	private final Neo4jServicioReactivo neo4jServicio;
+	private final Prim prim;
+	private final Kruskal kruskal;
+
+	public LaberintoServicio(AlgoritmoServicioImpl algoritmoServicio, Neo4jServicioReactivo neo4jServicio, Prim prim,
+			Kruskal kruskal) {
+		this.algoritmoServicio = algoritmoServicio;
+		this.neo4jServicio = neo4jServicio;
+		this.prim = prim;
+		this.kruskal = kruskal;
+	}
+
+	public Laberinto generarLaberinto(int ancho, int alto, String algoritmo) {
+		System.out.println("=== INICIANDO GENERACIÓN LABERINTO ===");
+		Laberinto laberinto = new Laberinto(UUID.randomUUID().toString(), ancho, alto);
+		System.out.println("Laberinto creado con ID: " + laberinto.getId());
+
+		// Generar grid usando algoritmo específico
+		List<List<Celda>> grid;
+		switch (algoritmo.toUpperCase()) {
+		case "PRIM":
+			grid = prim.generarLaberinto(ancho, alto, laberinto.getId());
+			break;
+		case "KRUSKAL":
+			grid = kruskal.generarLaberinto(ancho, alto, laberinto.getId());
+			break;
+		default:
+			throw new AlgoritmoNoSoportadoException(algoritmo);
+		}
+
+		laberinto.setGrid(grid);
+
+		// Encontrar y establecer celdas de inicio y salida
+		Celda inicio = null;
+		Celda salida = null;
+		for (List<Celda> fila : grid) {
+			for (Celda celda : fila) {
+				if ("INICIO".equals(celda.getTipo())) {
+					inicio = celda;
+				} else if ("SALIDA".equals(celda.getTipo())) {
+					salida = celda;
+				}
+			}
+		}
+
+		laberinto.setCeldaInicio(inicio);
+		laberinto.setCeldaSalida(salida);
+
+		// Guardar en Neo4j
+		List<Celda> todasLasCeldas = new ArrayList<>();
+		grid.forEach(todasLasCeldas::addAll);
+		System.out.println("Total de celdas a guardar: " + todasLasCeldas.size());
+
+		// Contar tipos de celdas
+		long celdasInicio = todasLasCeldas.stream().filter(c -> "INICIO".equals(c.getTipo())).count();
+		long celdasSalida = todasLasCeldas.stream().filter(c -> "SALIDA".equals(c.getTipo())).count();
+		long celdasLibres = todasLasCeldas.stream().filter(c -> "LIBRE".equals(c.getTipo())).count();
+		long celdasMuro = todasLasCeldas.stream().filter(c -> "MURO".equals(c.getTipo())).count();
+
+		System.out.println("Tipos de celdas:");
+		System.out.println("- INICIO: " + celdasInicio);
+		System.out.println("- SALIDA: " + celdasSalida);
+		System.out.println("- LIBRE: " + celdasLibres);
+		System.out.println("- MURO: " + celdasMuro);
+
+		try {
+			neo4jServicio.guardarTodasLasCeldas(todasLasCeldas).blockLast();
+			System.out.println("Celdas guardadas exitosamente en Neo4j");
+
+			// Verificar que se guardaron correctamente
+			System.out.println("Verificando guardado...");
+			List<Celda> celdasVerificacion = neo4jServicio.obtenerCeldasPorLaberinto(laberinto.getId()).collectList()
+					.block();
+			System.out.println("Celdas recuperadas de Neo4j: "
+					+ (celdasVerificacion != null ? celdasVerificacion.size() : "null"));
+
+		} catch (Exception e) {
+			System.out.println("ERROR guardando en Neo4j: " + e.getMessage());
+			e.printStackTrace();
+		}
+
+		return laberinto;
+	}
+
+	public List<Celda> resolverLaberinto(String laberintoId, String algoritmo) {
+		System.out.println("=== INICIANDO RESOLUCIÓN LABERINTO ===");
+		System.out.println("Laberinto ID: " + laberintoId);
+		System.out.println("Algoritmo: " + algoritmo);
+
+		// Cargar laberinto de Neo4j
+		System.out.println("Buscando celdas en Neo4j...");
+		List<Celda> celdas = neo4jServicio.obtenerCeldasPorLaberinto(laberintoId).collectList().block();
+		System.out.println("Celdas encontradas: " + (celdas != null ? celdas.size() : "null"));
+
+		if (celdas == null || celdas.isEmpty()) {
+			System.out.println("ERROR: No se encontraron celdas para el laberinto ID: " + laberintoId);
+			throw new LaberintoNoEncontradoException(laberintoId);
+		}
+
+		System.out.println("Buscando celda de inicio...");
+		Celda inicio = neo4jServicio.obtenerCeldaInicio(laberintoId).block();
+		System.out.println("Celda inicio encontrada: " + (inicio != null ? "SÍ" : "NO"));
+
+		System.out.println("Buscando celda de salida...");
+		Celda salida = neo4jServicio.obtenerCeldaSalida(laberintoId).block();
+		System.out.println("Celda salida encontrada: " + (salida != null ? "SÍ" : "NO"));
+
+		if (inicio == null || salida == null) {
+			System.out
+					.println("ERROR: No se encontraron celdas de inicio o salida para el laberinto ID: " + laberintoId);
+			throw new LaberintoNoEncontradoException(laberintoId);
+		}
+
+		System.out.println("Ejecutando algoritmo: " + algoritmo);
+		// Ejecutar algoritmo de resolución
+		switch (algoritmo.toUpperCase()) {
+		case "BFS":
+			return algoritmoServicio.bfs(inicio, salida, convertirAGrid(celdas));
+		case "DFS":
+			return algoritmoServicio.dfs(inicio, salida, convertirAGrid(celdas));
+		case "DIJKSTRA":
+			return algoritmoServicio.dijkstra(inicio, salida, convertirAGrid(celdas));
+		default:
+			throw new AlgoritmoNoSoportadoException(algoritmo);
+		}
+	}
+
+	// Método para obtener métricas de un algoritmo específico
+	public int obtenerCeldasExploradas(String algoritmo) {
+		switch (algoritmo.toUpperCase()) {
+		case "BFS":
+			return algoritmoServicio.getBfs().getCeldasExploradas();
+		case "DFS":
+			return algoritmoServicio.getDfs().getCeldasExploradas();
+		case "DIJKSTRA":
+			return algoritmoServicio.getDijkstra().getCeldasExploradas();
+		default:
+			return 0;
+		}
+	}
+
+	public long obtenerTiempoEjecucion(String algoritmo) {
+		switch (algoritmo.toUpperCase()) {
+		case "BFS":
+			return algoritmoServicio.getBfs().getTiempoEjecucion();
+		case "DFS":
+			return algoritmoServicio.getDfs().getTiempoEjecucion();
+		case "DIJKSTRA":
+			return algoritmoServicio.getDijkstra().getTiempoEjecucion();
+		default:
+			return 0L;
+		}
+	}
+
+	// Getter para acceso desde el controller
+	public Neo4jServicioReactivo getNeo4jServicio() {
+		return neo4jServicio;
+	}
+
+	private List<List<Celda>> convertirAGrid(List<Celda> celdas) {
+		if (celdas == null || celdas.isEmpty()) {
+			return new ArrayList<>();
+		}
+
+		// Encontrar las dimensiones del grid de manera más eficiente
+		int maxX = 0, maxY = 0;
+		for (Celda celda : celdas) {
+			maxX = Math.max(maxX, celda.getX());
+			maxY = Math.max(maxY, celda.getY());
+		}
+
+		// Crear grid con dimensiones exactas
+		List<List<Celda>> grid = new ArrayList<>(maxY + 1);
+		for (int y = 0; y <= maxY; y++) {
+			List<Celda> fila = new ArrayList<>(maxX + 1);
+			for (int x = 0; x <= maxX; x++) {
+				fila.add(null);
+			}
+			grid.add(fila);
+		}
+
+		// Llenar el grid con las celdas en una sola pasada
+		for (Celda celda : celdas) {
+			grid.get(celda.getY()).set(celda.getX(), celda);
+		}
+
+		return grid;
+	}
+}
