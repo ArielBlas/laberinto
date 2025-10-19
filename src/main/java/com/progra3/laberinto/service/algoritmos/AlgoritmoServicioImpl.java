@@ -64,4 +64,5 @@ public class AlgoritmoServicioImpl implements AlgoritmoServicio {
     public long getTiempoEjecucion() {
         return 0; // Se obtiene del algoritmo específico usado
     }
+    
 }

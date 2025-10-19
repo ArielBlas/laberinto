@@ -5,7 +5,6 @@
 **Problema:** Las celdas se encuentran en Neo4j pero **NO hay inicio/salida**
 **Causa:** Los algoritmos Prim y Kruskal generan laberintos donde las celdas libres están principalmente en el interior, no en los bordes
 **Solución:** Modificación de los algoritmos para garantizar celdas de inicio y salida en los bordes
-
 ---
 
 ## 🔧 CORRECCIONES IMPLEMENTADAS

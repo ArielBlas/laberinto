@@ -23,6 +23,7 @@ public class LaberintoController {
 	public LaberintoController(LaberintoServicio laberintoServicio) {
 		this.laberintoServicio = laberintoServicio;
 	}
+	//cambiar cada endpoint por cada algoritmo.
 
 	@PostMapping(value = "/generar", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<LaberintoDto> generarLaberinto(@RequestParam int ancho, @RequestParam int alto,

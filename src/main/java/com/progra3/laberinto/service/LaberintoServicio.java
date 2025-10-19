@@ -44,9 +44,7 @@ public class LaberintoServicio {
 		default:
 			throw new AlgoritmoNoSoportadoException(algoritmo);
 		}
-
 		laberinto.setGrid(grid);
-
 		// Encontrar y establecer celdas de inicio y salida
 		Celda inicio = null;
 		Celda salida = null;
