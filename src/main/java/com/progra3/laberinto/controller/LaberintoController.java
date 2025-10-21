@@ -43,7 +43,7 @@ public class LaberintoController {
 
 	@GetMapping(value = "/algoritmos", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<String>> obtenerAlgoritmos() {
-		List<String> algoritmos = Arrays.asList("BFS", "DFS", "DIJKSTRA", "PRIM", "KRUSKAL");
+		List<String> algoritmos = Arrays.asList("BFS", "DFS", "DIJKSTRA", "PRIM", "KRUSKAL", "GREEDY");
 		return ResponseEntity.status(HttpStatus.OK).body(algoritmos);
 	}
 	

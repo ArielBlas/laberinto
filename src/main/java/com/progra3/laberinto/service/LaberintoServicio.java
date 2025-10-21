@@ -135,6 +135,8 @@ public class LaberintoServicio {
 			return algoritmoServicio.dfs(inicio, salida, convertirAGrid(celdas));
 		case "DIJKSTRA":
 			return algoritmoServicio.dijkstra(inicio, salida, convertirAGrid(celdas));
+		case "GREEDY":
+			return algoritmoServicio.greedy(inicio, salida, convertirAGrid(celdas));
 		default:
 			throw new AlgoritmoNoSoportadoException(algoritmo);
 		}
@@ -149,6 +151,8 @@ public class LaberintoServicio {
 			return algoritmoServicio.getDfs().getCeldasExploradas();
 		case "DIJKSTRA":
 			return algoritmoServicio.getDijkstra().getCeldasExploradas();
+		case "GREEDY":
+			return algoritmoServicio.getGreedy().getCeldasExploradas();
 		default:
 			return 0;
 		}
@@ -162,6 +166,8 @@ public class LaberintoServicio {
 			return algoritmoServicio.getDfs().getTiempoEjecucion();
 		case "DIJKSTRA":
 			return algoritmoServicio.getDijkstra().getTiempoEjecucion();
+		case "GREEDY":
+			return algoritmoServicio.getGreedy().getTiempoEjecucion();
 		default:
 			return 0L;
 		}

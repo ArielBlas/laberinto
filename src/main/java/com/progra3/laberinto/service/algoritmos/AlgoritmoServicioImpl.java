@@ -12,11 +12,13 @@ public class AlgoritmoServicioImpl implements AlgoritmoServicio {
     private final BFS bfs;
     private final DFS dfs;
     private final Dijkstra dijkstra;
+    private final Greedy greedy;
     
-    public AlgoritmoServicioImpl(BFS bfs, DFS dfs, Dijkstra dijkstra) {
+    public AlgoritmoServicioImpl(BFS bfs, DFS dfs, Dijkstra dijkstra, Greedy greedy) {
         this.bfs = bfs;
         this.dfs = dfs;
         this.dijkstra = dijkstra;
+        this.greedy = greedy;
     }
     
     // Getters para acceso desde LaberintoServicio
@@ -30,6 +32,10 @@ public class AlgoritmoServicioImpl implements AlgoritmoServicio {
     
     public Dijkstra getDijkstra() {
         return dijkstra;
+    }
+
+    public Greedy getGreedy() {
+        return greedy;
     }
     
     @Override
@@ -48,6 +54,10 @@ public class AlgoritmoServicioImpl implements AlgoritmoServicio {
     
     public List<Celda> dijkstra(Celda inicio, Celda salida, List<List<Celda>> grid) {
         return dijkstra.resolver(inicio, salida, grid);
+    }
+
+    public List<Celda> greedy(Celda inicio, Celda salida, List<List<Celda>> grid) {
+        return greedy.resolver(inicio, salida, grid);
     }
     
     @Override
