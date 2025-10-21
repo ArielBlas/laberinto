@@ -10,9 +10,21 @@ class LaberintoAPI {
       const formData = new URLSearchParams();
       formData.append("ancho", ancho);
       formData.append("alto", alto);
-      formData.append("algoritmo", algoritmo);
 
-      const response = await fetch(`${this.baseURL}/generar`, {
+      // Usar endpoints específicos según el algoritmo
+      let endpoint;
+      switch (algoritmo.toUpperCase()) {
+        case "PRIM":
+          endpoint = `${this.baseURL}/generar/prim`;
+          break;
+        case "KRUSKAL":
+          endpoint = `${this.baseURL}/generar/kruskal`;
+          break;
+        default:
+          throw new Error(`Algoritmo de generación no soportado: ${algoritmo}`);
+      }
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
@@ -42,9 +54,27 @@ class LaberintoAPI {
     try {
       const formData = new URLSearchParams();
       formData.append("laberintoId", this.currentMazeId);
-      formData.append("algoritmo", algoritmo);
 
-      const response = await fetch(`${this.baseURL}/resolver`, {
+      // Usar endpoints específicos según el algoritmo
+      let endpoint;
+      switch (algoritmo.toUpperCase()) {
+        case "BFS":
+          endpoint = `${this.baseURL}/resolver/bfs`;
+          break;
+        case "DFS":
+          endpoint = `${this.baseURL}/resolver/dfs`;
+          break;
+        case "DIJKSTRA":
+          endpoint = `${this.baseURL}/resolver/dijkstra`;
+          break;
+        case "GREEDY":
+          endpoint = `${this.baseURL}/resolver/greedy`;
+          break;
+        default:
+          throw new Error(`Algoritmo de resolución no soportado: ${algoritmo}`);
+      }
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",

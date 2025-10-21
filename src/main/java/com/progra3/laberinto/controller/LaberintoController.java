@@ -23,63 +23,70 @@ public class LaberintoController {
 	public LaberintoController(LaberintoServicio laberintoServicio) {
 		this.laberintoServicio = laberintoServicio;
 	}
-	//cambiar cada endpoint por cada algoritmo.
+	//Endpoints para generar con cada algoritmo
+    // Generación con PRIM
+    @PostMapping(value = "/generar/prim", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<LaberintoDto> generarLaberintoPrim(@RequestParam int ancho, @RequestParam int alto) {
+            Laberinto laberinto = laberintoServicio.generarLaberinto(ancho, alto, "PRIM");
+            LaberintoDto laberintoDto = convertirALaberintoDto(laberinto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(laberintoDto);
+    }
 
-	@PostMapping(value = "/generar", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<LaberintoDto> generarLaberinto(@RequestParam int ancho, @RequestParam int alto,
-			@RequestParam String algoritmo) {
-		LaberintoDto laberintoDto = convertirALaberintoDto(laberintoServicio.generarLaberinto(ancho, alto, algoritmo));
-		return ResponseEntity.status(HttpStatus.CREATED).body(laberintoDto);
-	}
+    // Generación con KRUSKAL
+    @PostMapping(value = "/generar/kruskal", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> generarLaberintoKruskal(@RequestParam int ancho, @RequestParam int alto) {
 
-	@PostMapping(value = "/resolver", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<ResultadoResolucionDto> resolverLaberinto(@RequestParam String laberintoId,
-			@RequestParam String algoritmo) {
+            Laberinto laberinto = laberintoServicio.generarLaberinto(ancho, alto, "KRUSKAL");
+            LaberintoDto laberintoDto = convertirALaberintoDto(laberinto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(laberintoDto);
+    }
+    
+    
+    //Endpoints para resolver laberintos con distintos algoritmos
+    // Resolver con BFS
+    @PostMapping(value = "/resolver/bfs", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResultadoResolucionDto> resolverLaberintoBfs(@RequestParam String laberintoId) {
 
-		ResultadoResolucionDto resultadoDto = convertirAResultadoDto(
-				laberintoServicio.resolverLaberinto(laberintoId, algoritmo), algoritmo);
+            List<Celda> camino = laberintoServicio.resolverLaberinto(laberintoId, "BFS");
+            ResultadoResolucionDto resultadoDto = convertirAResultadoDto(camino, "BFS");
+            return ResponseEntity.status(HttpStatus.OK).body(resultadoDto);
+    }
+
+    // Resolver con DFS
+    @PostMapping(value = "/resolver/dfs", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResultadoResolucionDto> resolverLaberintoDfs(@RequestParam String laberintoId) {
+
+            List<Celda> camino = laberintoServicio.resolverLaberinto(laberintoId, "DFS");
+            ResultadoResolucionDto resultadoDto = convertirAResultadoDto(camino, "DFS");
+            return ResponseEntity.status(HttpStatus.OK).body(resultadoDto);
+    }
+
+    // Resolver con DIJKSTRA
+    @PostMapping(value = "/resolver/dijkstra", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<ResultadoResolucionDto> resolverLaberintoDijkstra(@RequestParam String laberintoId) {
+            List<Celda> camino = laberintoServicio.resolverLaberinto(laberintoId, "DIJKSTRA");
+            ResultadoResolucionDto resultadoDto = convertirAResultadoDto(camino, "DIJKSTRA");
+            return ResponseEntity.status(HttpStatus.OK).body(resultadoDto);
+    }
+
+	// Resolver con GREEDY
+	@PostMapping(value = "/resolver/greedy", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<ResultadoResolucionDto> resolverLaberintoGreedy(@RequestParam String
+			laberintoId) {
+
+		List<Celda> camino = laberintoServicio.resolverLaberinto(laberintoId, "GREEDY");
+		ResultadoResolucionDto resultadoDto = convertirAResultadoDto(camino, "GREEDY");
 		return ResponseEntity.status(HttpStatus.OK).body(resultadoDto);
 	}
-
+ 
 	@GetMapping(value = "/algoritmos", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<String>> obtenerAlgoritmos() {
-		List<String> algoritmos = Arrays.asList("BFS", "DFS", "DIJKSTRA", "PRIM", "KRUSKAL", "GREEDY");
+		List<String> algoritmos = Arrays.asList("BFS", "DFS", "DIJKSTRA", "GREEDY", "PRIM", "KRUSKAL");
 		return ResponseEntity.status(HttpStatus.OK).body(algoritmos);
 	}
 	
-	@GetMapping(value = "/diagnostico/{laberintoId}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<String> diagnosticarLaberinto(@PathVariable String laberintoId) {
-		try {
-			System.out.println("=== DIAGNÓSTICO LABERINTO ===");
-			System.out.println("Laberinto ID: " + laberintoId);
-			
-			// Verificar celdas
-			var celdas = laberintoServicio.getNeo4jServicio().obtenerCeldasPorLaberinto(laberintoId).collectList().block();
-			System.out.println("Celdas encontradas: " + (celdas != null ? celdas.size() : "null"));
-			
-			// Verificar inicio
-			var inicio = laberintoServicio.getNeo4jServicio().obtenerCeldaInicio(laberintoId).block();
-			System.out.println("Celda inicio: " + (inicio != null ? "SÍ" : "NO"));
-			
-			// Verificar salida
-			var salida = laberintoServicio.getNeo4jServicio().obtenerCeldaSalida(laberintoId).block();
-			System.out.println("Celda salida: " + (salida != null ? "SÍ" : "NO"));
-			
-			String resultado = String.format("Laberinto ID: %s, Celdas: %d, Inicio: %s, Salida: %s", 
-				laberintoId, 
-				celdas != null ? celdas.size() : 0,
-				inicio != null ? "SÍ" : "NO",
-				salida != null ? "SÍ" : "NO");
-			
-			return ResponseEntity.status(HttpStatus.OK).body(resultado);
-		} catch (Exception e) {
-			System.out.println("ERROR en diagnóstico: " + e.getMessage());
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
-		}
-	}
 
-	// Métodos de conversión
+	// Métodos de conversión -------------------------------------------------- 
 	private LaberintoDto convertirALaberintoDto(Laberinto laberinto) {
 		return new LaberintoDto(laberinto.getId(), laberinto.getAncho(), laberinto.getAlto(), laberinto.getGrid(),
 				laberinto.getCeldaInicio(), laberinto.getCeldaSalida());

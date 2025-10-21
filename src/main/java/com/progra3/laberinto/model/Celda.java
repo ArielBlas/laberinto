@@ -1,5 +1,6 @@
 package com.progra3.laberinto.model;
 
+import org.springframework.data.annotation.Version;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
 
@@ -7,6 +8,8 @@ import org.springframework.data.neo4j.core.schema.Node;
 public class Celda {
 	@Id
 	private String id; // formato: "laberintoId-x-y"
+	@Version
+	private Long version;
 	private int x;
 	private int y;
 	private String tipo; // "LIBRE", "MURO", "INICIO", "SALIDA"
@@ -31,6 +34,14 @@ public class Celda {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public Long getVersion() {
+		return version;
+	}
+
+	public void setVersion(Long version) {
+		this.version = version;
 	}
 
 	public int getX() {

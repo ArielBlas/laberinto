@@ -45,7 +45,7 @@ function setupInputValidation() {
         value = value + 1; // Convertir a impar
       }
       if (value < 5) value = 5;
-      if (value >= 50) value = 50;
+      if (value > 50) value = 49; // Corregir límite máximo
       this.value = value;
     });
   });
@@ -300,3 +300,10 @@ window.addEventListener("error", function (event) {
 // Logs de estado
 console.log("🚀 Simulador de laberintos cargado");
 console.log("🔗 Conectando con backend en:", api.baseURL);
+console.log(
+  "✅ Frontend actualizado para nuevos endpoints específicos por algoritmo"
+);
+console.log("📍 Endpoints de generación: /generar/prim, /generar/kruskal");
+console.log(
+  "📍 Endpoints de resolución: /resolver/bfs, /resolver/dfs, /resolver/dijkstra, /resolver/greedy"
+);

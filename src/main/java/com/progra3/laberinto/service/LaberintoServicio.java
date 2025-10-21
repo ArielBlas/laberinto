@@ -89,6 +89,23 @@ public class LaberintoServicio {
 			System.out.println("Celdas recuperadas de Neo4j: "
 					+ (celdasVerificacion != null ? celdasVerificacion.size() : "null"));
 
+			// Asegurar consistencia: obtener inicio y salida desde la BD y asignarlos al objeto laberinto
+			try {
+				Celda inicioDb = neo4jServicio.obtenerCeldaInicio(laberinto.getId()).block();
+				Celda salidaDb = neo4jServicio.obtenerCeldaSalida(laberinto.getId()).block();
+				if (inicioDb != null) {
+					laberinto.setCeldaInicio(inicioDb);
+				}
+				if (salidaDb != null) {
+					laberinto.setCeldaSalida(salidaDb);
+				}
+				System.out.println("Inicio en BD: " + (inicioDb != null ? "(" + inicioDb.getX() + "," + inicioDb.getY() + ")" : "NO"));
+				System.out.println("Salida en BD: " + (salidaDb != null ? "(" + salidaDb.getX() + "," + salidaDb.getY() + ")" : "NO"));
+			} catch (Exception ex) {
+				System.out.println("ERROR obteniendo inicio/salida desde BD: " + ex.getMessage());
+				ex.printStackTrace();
+			}
+
 		} catch (Exception e) {
 			System.out.println("ERROR guardando en Neo4j: " + e.getMessage());
 			e.printStackTrace();
@@ -185,9 +202,14 @@ public class LaberintoServicio {
 
 		// Encontrar las dimensiones del grid de manera más eficiente
 		int maxX = 0, maxY = 0;
+		String laberintoId = null;
 		for (Celda celda : celdas) {
+			if (celda == null) continue;
 			maxX = Math.max(maxX, celda.getX());
 			maxY = Math.max(maxY, celda.getY());
+			if (laberintoId == null && celda.getLaberintoId() != null) {
+				laberintoId = celda.getLaberintoId();
+			}
 		}
 
 		// Crear grid con dimensiones exactas
@@ -202,7 +224,30 @@ public class LaberintoServicio {
 
 		// Llenar el grid con las celdas en una sola pasada
 		for (Celda celda : celdas) {
-			grid.get(celda.getY()).set(celda.getX(), celda);
+			if (celda == null) continue;
+			int x = celda.getX();
+			int y = celda.getY();
+			if (y >= 0 && y <= maxY && x >= 0 && x <= maxX) {
+				grid.get(y).set(x, celda);
+			} else {
+				System.out.println("ADVERTENCIA: Celda con coordenadas inválidas encontrada: " +
+					(celda.getLaberintoId() != null ? celda.getLaberintoId() : "?") + " - x=" + x + " y=" + y);
+			}
+		}
+
+		// Rellenar celdas faltantes con muros (placeholders) para evitar NPE en algoritmos de resolución
+		if (laberintoId == null && !celdas.isEmpty()) {
+			laberintoId = celdas.get(0).getLaberintoId();
+		}
+		for (int y = 0; y <= maxY; y++) {
+			for (int x = 0; x <= maxX; x++) {
+				if (grid.get(y).get(x) == null) {
+					String id = (laberintoId != null ? laberintoId : "unknown") + "-" + x + "-" + y;
+					Celda placeholder = new Celda(id, x, y, "MURO", laberintoId);
+					grid.get(y).set(x, placeholder);
+					System.out.println("INFO: Insertando celda placeholder MURO en posición (" + x + "," + y + ")");
+				}
+			}
 		}
 
 		return grid;
