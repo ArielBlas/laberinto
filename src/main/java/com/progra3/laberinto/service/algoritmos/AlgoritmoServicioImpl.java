@@ -13,12 +13,14 @@ public class AlgoritmoServicioImpl implements AlgoritmoServicio {
     private final DFS dfs;
     private final Dijkstra dijkstra;
     private final Greedy greedy;
+    private final Backtracking backtracking;
     
-    public AlgoritmoServicioImpl(BFS bfs, DFS dfs, Dijkstra dijkstra, Greedy greedy) {
+    public AlgoritmoServicioImpl(BFS bfs, DFS dfs, Dijkstra dijkstra, Greedy greedy, Backtracking backtracking) {
         this.bfs = bfs;
         this.dfs = dfs;
         this.dijkstra = dijkstra;
         this.greedy = greedy;
+        this.backtracking = backtracking;
     }
     
     // Getters para acceso desde LaberintoServicio
@@ -36,6 +38,10 @@ public class AlgoritmoServicioImpl implements AlgoritmoServicio {
 
     public Greedy getGreedy() {
         return greedy;
+    }
+    
+    public Backtracking getBacktracking() {
+    	return backtracking;
     }
     
     @Override
@@ -58,6 +64,10 @@ public class AlgoritmoServicioImpl implements AlgoritmoServicio {
 
     public List<Celda> greedy(Celda inicio, Celda salida, List<List<Celda>> grid) {
         return greedy.resolver(inicio, salida, grid);
+    }
+    
+    public List<Celda> backtracking(Celda inicio, Celda salida, List<List<Celda>> grid) {
+        return backtracking.resolver(inicio, salida, grid);
     }
     
     @Override

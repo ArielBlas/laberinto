@@ -81,9 +81,19 @@ public class LaberintoController {
  
 	@GetMapping(value = "/algoritmos", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<String>> obtenerAlgoritmos() {
-		List<String> algoritmos = Arrays.asList("BFS", "DFS", "DIJKSTRA", "GREEDY", "PRIM", "KRUSKAL");
+		List<String> algoritmos = Arrays.asList("BFS", "DFS", "DIJKSTRA", "GREEDY", "PRIM", "KRUSKAL", "BACKTRACKING");
 		return ResponseEntity.status(HttpStatus.OK).body(algoritmos);
 	}
+	
+	// Resolver con BACKTRACKING
+		@PostMapping(value = "/resolver/backtracking", produces = MediaType.APPLICATION_JSON_VALUE)
+		public ResponseEntity<ResultadoResolucionDto> resolverLaberintoBacktracking(@RequestParam String
+				laberintoId) {
+
+			List<Celda> camino = laberintoServicio.resolverLaberinto(laberintoId, "BACKTRACKING");
+			ResultadoResolucionDto resultadoDto = convertirAResultadoDto(camino, "BACKTRACKING");
+			return ResponseEntity.status(HttpStatus.OK).body(resultadoDto);
+		}
 	
 
 	// Métodos de conversión -------------------------------------------------- 

@@ -154,6 +154,8 @@ public class LaberintoServicio {
 			return algoritmoServicio.dijkstra(inicio, salida, convertirAGrid(celdas));
 		case "GREEDY":
 			return algoritmoServicio.greedy(inicio, salida, convertirAGrid(celdas));
+		case "BACKTRACKING":
+			return algoritmoServicio.backtracking(inicio, salida, convertirAGrid(celdas));
 		default:
 			throw new AlgoritmoNoSoportadoException(algoritmo);
 		}
@@ -170,6 +172,8 @@ public class LaberintoServicio {
 			return algoritmoServicio.getDijkstra().getCeldasExploradas();
 		case "GREEDY":
 			return algoritmoServicio.getGreedy().getCeldasExploradas();
+		case "BACKTRACKING":
+			return algoritmoServicio.getBacktracking().getCeldasExploradas();
 		default:
 			return 0;
 		}
