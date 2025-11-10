@@ -107,6 +107,32 @@ class LaberintoAPI {
     }
   }
 
+  // Comparar todos los algoritmos y obtener ranking
+  async resolverTodos(metric = "PATH", sorter = "MERGE") {
+    if (!this.currentMazeId) {
+      throw new Error("No hay laberinto generado");
+    }
+    try {
+      const formData = new URLSearchParams();
+      formData.append("laberintoId", this.currentMazeId);
+      formData.append("metric", metric);
+      formData.append("sorter", sorter);
+
+      const response = await fetch(`${this.baseURL}/resolver/all`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData,
+      });
+      if (!response.ok) {
+        throw new Error(`Error HTTP: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error("Error comparando algoritmos:", error);
+      throw error;
+    }
+  }
+
   // Diagnosticar laberinto
   async diagnosticarLaberinto() {
     if (!this.currentMazeId) {

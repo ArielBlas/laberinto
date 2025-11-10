@@ -61,6 +61,42 @@
           <button id="clear-btn" class="btn btn-warning">🧹 Limpiar</button>
         </div>
 
+        <!-- Comparar Algoritmos -->
+        <div class="control-group">
+          <h3>🏅 Comparar Algoritmos</h3>
+          <label for="metric-select">Métrica:</label>
+          <select id="metric-select">
+            <option value="PATH">Camino más corto</option>
+            <option value="TIME">Menor tiempo</option>
+            <option value="EXPLORED">Menos celdas exploradas</option>
+          </select>
+
+          <label for="sorter-select">Ordenar con:</label>
+          <select id="sorter-select">
+            <option value="MERGE">MergeSort</option>
+            <option value="QUICK">QuickSort</option>
+          </select>
+
+          <button id="compare-btn" class="btn btn-info" disabled>
+            📈 Comparar todos
+          </button>
+          <div id="ranking-container" style="margin-top: 10px; display: none">
+            <h4>Ranking</h4>
+            <table id="ranking-table">
+              <thead>
+                <tr>
+                  <th>Algoritmo</th>
+                  <th>Largo Camino</th>
+                  <th>Celdas Exploradas</th>
+                  <th>Tiempo (ms)</th>
+                  <th>Éxito</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Información -->
         <div class="control-group">
           <h3>📊 Estadísticas</h3>

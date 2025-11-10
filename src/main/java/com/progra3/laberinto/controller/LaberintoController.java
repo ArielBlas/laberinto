@@ -2,6 +2,7 @@ package com.progra3.laberinto.controller;
 
 import com.progra3.laberinto.dto.LaberintoDto;
 import com.progra3.laberinto.dto.ResultadoResolucionDto;
+import com.progra3.laberinto.dto.AlgoritmoResultadoDto;
 import com.progra3.laberinto.model.Celda;
 import com.progra3.laberinto.model.Laberinto;
 import com.progra3.laberinto.service.LaberintoServicio;
@@ -78,6 +79,16 @@ public class LaberintoController {
 		ResultadoResolucionDto resultadoDto = convertirAResultadoDto(camino, "GREEDY");
 		return ResponseEntity.status(HttpStatus.OK).body(resultadoDto);
 	}
+
+        // Comparar todos los algoritmos (versión simplificada sin enums)
+        @PostMapping(value = "/resolver/all", produces = MediaType.APPLICATION_JSON_VALUE)
+        public ResponseEntity<List<AlgoritmoResultadoDto>> compararTodos(
+                        @RequestParam String laberintoId,
+                        @RequestParam(required = false, defaultValue = "PATH") String metric,
+                        @RequestParam(required = false, defaultValue = "MERGE") String sorter) {
+                List<AlgoritmoResultadoDto> ranking = laberintoServicio.compararAlgoritmos(laberintoId, metric, sorter);
+                return ResponseEntity.ok(ranking);
+        }
  
 	@GetMapping(value = "/algoritmos", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<List<String>> obtenerAlgoritmos() {

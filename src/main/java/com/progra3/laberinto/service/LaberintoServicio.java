@@ -7,6 +7,9 @@ import com.progra3.laberinto.service.algoritmos.Prim;
 import com.progra3.laberinto.service.algoritmos.Kruskal;
 import com.progra3.laberinto.excepciones.AlgoritmoNoSoportadoException;
 import com.progra3.laberinto.excepciones.LaberintoNoEncontradoException;
+import com.progra3.laberinto.dto.AlgoritmoResultadoDto;
+import com.progra3.laberinto.service.algoritmos.MergeSort;
+import com.progra3.laberinto.service.algoritmos.QuickSort;
 
 import org.springframework.stereotype.Service;
 import java.util.*;
@@ -188,6 +191,47 @@ public class LaberintoServicio {
 		default:
 			return 0L;
 		}
+	}
+
+	public List<AlgoritmoResultadoDto> compararAlgoritmos(String laberintoId, String metric, String sorter) {
+		List<String> algoritmos = Arrays.asList("BFS", "DFS", "DIJKSTRA", "GREEDY");
+		List<AlgoritmoResultadoDto> resultados = new ArrayList<>();
+
+		for (String alg : algoritmos) {
+			List<Celda> camino = resolverLaberinto(laberintoId, alg);
+			boolean exito = camino != null && !camino.isEmpty();
+			int largo = (camino != null && exito) ? camino.size() : 0;
+			int exploradas = obtenerCeldasExploradas(alg);
+			long tiempo = obtenerTiempoEjecucion(alg);
+			resultados.add(new AlgoritmoResultadoDto(alg, largo, exploradas, tiempo, exito));
+		}
+
+		Comparator<AlgoritmoResultadoDto> comparator;
+		switch ((metric == null) ? "PATH" : metric.toUpperCase()) {
+		case "TIME":
+			comparator = (a, b) -> Long.compare(a.getTiempoEjecucionMs(), b.getTiempoEjecucionMs());
+			break;
+		case "EXPLORED":
+			comparator = (a, b) -> Integer.compare(a.getCeldasExploradas(), b.getCeldasExploradas());
+			break;
+		case "PATH":
+		default:
+			comparator = (a, b) -> Integer.compare(a.getLargoCamino(), b.getLargoCamino());
+			break;
+		}
+
+		List<AlgoritmoResultadoDto> ordenados;
+		switch ((sorter == null) ? "MERGE" : sorter.toUpperCase()) {
+		case "QUICK":
+			ordenados = QuickSort.sort(resultados, comparator);
+			break;
+		case "MERGE":
+		default:
+			ordenados = MergeSort.sort(resultados, comparator);
+			break;
+		}
+
+		return ordenados;
 	}
 
 	// Getter para acceso desde el controller

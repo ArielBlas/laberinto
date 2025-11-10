@@ -28,6 +28,12 @@ function setupEventListeners() {
   // Botón limpiar
   document.getElementById("clear-btn").addEventListener("click", clearSolution);
 
+  // Botón comparar
+  const compareBtn = document.getElementById("compare-btn");
+  if (compareBtn) {
+    compareBtn.addEventListener("click", compareAlgorithms);
+  }
+
   // Validación de inputs
   setupInputValidation();
 }
@@ -124,6 +130,9 @@ async function generateMaze() {
 
     // Habilitar botón resolver
     solveBtn.disabled = false;
+    // Habilitar botón comparar
+    const compareBtn = document.getElementById("compare-btn");
+    if (compareBtn) compareBtn.disabled = false;
     updateStatus("Laberinto generado exitosamente", "success");
 
     showNotification("✅ Laberinto generado correctamente", "success");
@@ -139,6 +148,58 @@ async function generateMaze() {
     generateBtn.disabled = false;
     generateBtn.classList.remove("loading");
   }
+}
+
+// Comparar todos los algoritmos
+async function compareAlgorithms() {
+  if (!currentMazeData) {
+    showNotification("⚠️ Primero genera un laberinto", "warning");
+    return;
+  }
+  const metric = document.getElementById("metric-select").value;
+  const sorter = document.getElementById("sorter-select").value;
+  const compareBtn = document.getElementById("compare-btn");
+
+  try {
+    compareBtn.textContent = "📊 Comparando...";
+    compareBtn.disabled = true;
+    updateStatus("Comparando algoritmos...", "info");
+    game.showLoading("📊 Comparando algoritmos...");
+
+    const ranking = await api.resolverTodos(metric, sorter);
+    console.log("Ranking recibido:", ranking);
+    renderRanking(ranking);
+    updateStatus("Comparación completada", "success");
+    showNotification("✅ Comparación lista", "success");
+  } catch (err) {
+    console.error("Error comparando algoritmos", err);
+    updateStatus("Error comparando", "error");
+    showNotification("❌ Error comparando", "error");
+  } finally {
+    compareBtn.textContent = "📈 Comparar todos";
+    compareBtn.disabled = false;
+    game.hideLoading();
+  }
+}
+
+function renderRanking(ranking) {
+  const container = document.getElementById("ranking-container");
+  const tbody = document.querySelector("#ranking-table tbody");
+  if (!container || !tbody) return;
+  tbody.innerHTML = "";
+
+  ranking.forEach((r) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${getAlgorithmDisplayName(r.algoritmo)}</td>
+      <td>${r.largoCamino}</td>
+      <td>${r.celdasExploradas}</td>
+      <td>${r.tiempoEjecucionMs}</td>
+      <td>${r.exito ? "✔️" : "❌"}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  container.style.display = "block";
 }
 
 // Resolver laberinto
