@@ -192,13 +192,15 @@ public class LaberintoServicio {
 			return algoritmoServicio.getDijkstra().getTiempoEjecucion();
 		case "GREEDY":
 			return algoritmoServicio.getGreedy().getTiempoEjecucion();
+		case "BACKTRACKING":
+			return algoritmoServicio.getBacktracking().getTiempoEjecucion();
 		default:
 			return 0L;
 		}
 	}
 
 	public List<AlgoritmoResultadoDto> compararAlgoritmos(String laberintoId, String metric, String sorter) {
-		List<String> algoritmos = Arrays.asList("BFS", "DFS", "DIJKSTRA", "GREEDY");
+		List<String> algoritmos = Arrays.asList("BFS", "DFS", "DIJKSTRA", "GREEDY", "BACKTRACKING");
 		List<AlgoritmoResultadoDto> resultados = new ArrayList<>();
 
 		for (String alg : algoritmos) {
