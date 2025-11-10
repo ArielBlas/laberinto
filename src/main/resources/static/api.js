@@ -70,6 +70,9 @@ class LaberintoAPI {
         case "GREEDY":
           endpoint = `${this.baseURL}/resolver/greedy`;
           break;
+		 case "BACKTRACKING":
+			endpoint =  `${this.baseURL}/resolver/backtracking`;
+			break;
         default:
           throw new Error(`Algoritmo de resolución no soportado: ${algoritmo}`);
       }

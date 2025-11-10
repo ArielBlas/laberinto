@@ -69,7 +69,7 @@ async function loadAvailableAlgorithms() {
 
     // Filtrar solo algoritmos de resolución
     const solverAlgorithms = algorithms.filter((alg) =>
-      ["BFS", "DFS", "DIJKSTRA", "GREEDY"].includes(alg)
+      ["BFS", "DFS", "DIJKSTRA", "GREEDY", "BACKTRACKING"].includes(alg)
     );
 
     solverAlgorithms.forEach((algorithm) => {
@@ -93,6 +93,7 @@ function getAlgorithmDisplayName(algorithm) {
     GREEDY: "Greedy (Best-First)",
     PRIM: "Prim",
     KRUSKAL: "Kruskal",
+	BACKTRACKING : "Backtracking",
   };
   return names[algorithm] || algorithm;
 }
